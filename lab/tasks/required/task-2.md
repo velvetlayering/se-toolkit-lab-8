@@ -160,16 +160,18 @@ Both are in a single repository. The webchat plugin handles:
    git submodule add https://github.com/inno-se-toolkit/nanobot-websocket-channel
    ```
 
-   This repo contains three things:
-   - `nanobot_webchat/` — the WebSocket channel plugin
+   This repo contains a `nanobot-websocket-channel/` workspace with three parts:
+   - `nanobot-webchat/` — the Python project for the WebSocket channel plugin
    - `client-web-flutter/` — Flutter web chat UI
    - `client-telegram-bot/` — Telegram bot (optional task)
+
+   All three live under `nanobot-websocket-channel/`.
 
 2. Install the webchat channel plugin into your nanobot environment:
 
    ```terminal
    cd nanobot
-   uv add nanobot-webchat --editable ../nanobot-websocket-channel
+   uv add nanobot-webchat --editable ../nanobot-websocket-channel/nanobot-webchat
    ```
 
    This registers the `webchat` channel type in nanobot via a Python entry point. You can verify: `nanobot` will now recognize `webchat` as a valid channel in the config.
