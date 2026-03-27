@@ -21,7 +21,7 @@ dev = [
 ]
 
 [tool.ruff]
-exclude = ["qwen-code-api", "packages/nanobot-ai"]
+exclude = ["qwen-code-api"]
 
 [tool.ruff.lint]
 select = ["RET503"]
@@ -125,7 +125,6 @@ exclude = [
   "**/.*",
   ".venv",
   ".direnv",
-  "packages/nanobot-ai",
 ]
 typeCheckingMode = "strict"
 reportAssignmentType = "none"
