@@ -39,6 +39,21 @@ def main():
     if "NANOBOT_GATEWAY_CONTAINER_PORT" in os.environ:
         config["gateway"]["port"] = int(os.environ["NANOBOT_GATEWAY_CONTAINER_PORT"])
 
+    # Webchat channel settings
+    if "channels" not in config:
+        config["channels"] = {}
+    if "webchat" not in config["channels"]:
+        config["channels"]["webchat"] = {"enabled": True, "allowFrom": ["*"]}
+
+    if "NANOBOT_WEBCHAT_CONTAINER_ADDRESS" in os.environ:
+        config["channels"]["webchat"]["host"] = os.environ[
+            "NANOBOT_WEBCHAT_CONTAINER_ADDRESS"
+        ]
+    if "NANOBOT_WEBCHAT_CONTAINER_PORT" in os.environ:
+        config["channels"]["webchat"]["port"] = int(
+            os.environ["NANOBOT_WEBCHAT_CONTAINER_PORT"]
+        )
+
     # MCP server environment variables for LMS
     if "tools" not in config:
         config["tools"] = {}
@@ -62,6 +77,35 @@ def main():
         config["tools"]["mcpServers"]["lms"]["env"]["NANOBOT_LMS_API_KEY"] = os.environ[
             "NANOBOT_LMS_API_KEY"
         ]
+
+    # Add webchat MCP server for structured UI
+    if "webchat" not in config["tools"]["mcpServers"]:
+        config["tools"]["mcpServers"]["webchat"] = {
+            "command": "python",
+            "args": ["-m", "mcp_webchat"],
+            "env": {},
+        }
+
+    # Ensure env section exists for webchat MCP server
+    if "env" not in config["tools"]["mcpServers"]["webchat"]:
+        config["tools"]["mcpServers"]["webchat"]["env"] = {}
+
+    if "NANOBOT_WEBCHAT_UI_RELAY_URL" in os.environ:
+        config["tools"]["mcpServers"]["webchat"]["env"][
+            "NANOBOT_WEBCHAT_UI_RELAY_URL"
+        ] = os.environ["NANOBOT_WEBCHAT_UI_RELAY_URL"]
+    if "NANOBOT_WEBCHAT_UI_RELAY_TOKEN" in os.environ:
+        config["tools"]["mcpServers"]["webchat"]["env"][
+            "NANOBOT_WEBCHAT_UI_RELAY_TOKEN"
+        ] = os.environ["NANOBOT_WEBCHAT_UI_RELAY_TOKEN"]
+
+    # Add observability MCP server
+    if "obs" not in config["tools"]["mcpServers"]:
+        config["tools"]["mcpServers"]["obs"] = {
+            "command": "python",
+            "args": ["-m", "mcp_obs"],
+            "env": {},
+        }
 
     # Write the resolved config
     with open(resolved_config_path, "w") as f:
