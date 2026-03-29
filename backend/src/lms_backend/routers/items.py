@@ -20,13 +20,16 @@ async def get_items(session: AsyncSession = Depends(get_session)):
     try:
         return await read_items(session)
     except Exception as exc:
-        logger.warning(
-            "items_list_failed_as_not_found",
-            extra={"event": "items_list_failed_as_not_found"},
+        logger.error(
+            "items_list_failed",
+            extra={"event": "items_list_failed", "error": str(exc)},
         )
+        # Re-raise the original exception instead of masking it as 404
+        # This allows proper HTTP status codes (500 for backend errors)
+        # instead of misleading 404 responses for infrastructure failures
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Items not found",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Internal server error: {type(exc).__name__}",
         ) from exc
 
 
