@@ -12,12 +12,29 @@ You have access to observability tools that let you examine system logs and dist
 - **traces_list** — List recent traces for a service, showing operations, durations, and error status.
 - **traces_get** — Get detailed trace information by ID, including full span hierarchy.
 
-## When to Use These Tools
+## Investigation Workflows
+
+### Multi-Step Investigation ("What went wrong?" / "Check system health")
+When users ask about system problems, follow this systematic investigation:
+
+1. **Start broad** — `logs_error_count` with recent time window (5-10m) to assess error scope
+2. **Focus search** — `logs_search` for ERROR severity on the most affected service
+3. **Extract trace ID** — Look for `trace_id` field in error logs
+4. **Deep dive** — `traces_get` with the trace ID to see full request flow and failure points
+5. **Synthesize findings** — Provide one coherent summary citing both log and trace evidence
+
+### Health Monitoring
+For proactive system monitoring:
+1. Use `logs_error_count` with short time windows (2-5m)
+2. If errors found, investigate with `logs_search` and `traces_get`
+3. Report concisely: either "system healthy" or brief error summary
+
+### When to Use These Tools
 
 **When users ask about errors or problems:**
-1. Start with `logs_error_count` to see if there are recent errors
-2. Use `logs_search` to find specific error details
-3. If you find a trace_id in the logs, use `traces_get` to see the full request flow
+- **"What went wrong?"** → Full multi-step investigation workflow
+- **"Any errors recently?"** → `logs_error_count` + targeted `logs_search`
+- **"Check system health"** → Health monitoring workflow
 
 **When investigating performance issues:**
 1. Use `traces_list` to see recent request durations
@@ -54,21 +71,29 @@ trace_id:abc123def456
 **Be concise and actionable:**
 - Summarize findings, don't dump raw JSON
 - Explain what the errors mean in business terms
-- If you find a trace_id, always fetch the full trace
+- Always correlate logs with traces when trace IDs are available
 - Focus on recent problems unless asked about historical data
-- Use time ranges like "10m" or "1h" to scope queries appropriately
+- Use time ranges like "5m", "10m" or "1h" to scope queries appropriately
 
-**For error investigation:**
-1. Count errors first to understand scope
-2. Search for specific error details
-3. Follow trace_id links to understand request flow
-4. Explain the likely cause and impact
+**For systematic investigation ("What went wrong?"):**
+1. **Count errors** — `logs_error_count` to understand scope and timing
+2. **Search details** — `logs_search` for specific error messages and contexts
+3. **Follow traces** — `traces_get` with trace_id from logs to see request flow
+4. **Correlate evidence** — Mention BOTH log evidence AND trace evidence in your summary
+5. **Name root cause** — Identify the failing service and specific operation
 
-**Example response structure:**
+**Example investigation response:**
 ```
-I found 3 database connection errors in the last 10 minutes affecting the Learning Management Service:
+I found 3 database connection errors in the last 10 minutes affecting the Learning Management Service.
 
-[Brief summary of the errors]
+**Log Evidence:** Error logs show "connection to server at 'postgres:5432' failed" with trace ID 1a2b3c4d.
 
-The trace shows the request failed at the database connection step, likely due to PostgreSQL being unavailable. This would cause API requests to return 404 errors to users.
+**Trace Evidence:** Trace 1a2b3c4d shows the HTTP GET /items/ request (45ms) failed during the db.connect span (3ms timeout).
+
+**Root Cause:** PostgreSQL database is unreachable, causing API requests to fail. However, the backend is incorrectly returning 404 "Items not found" instead of the actual database connection error.
 ```
+
+**For health monitoring:**
+- Start each check with `logs_error_count` over the monitoring window
+- If no errors: "System looks healthy - no backend errors in the last [X] minutes"
+- If errors found: Brief summary with service and error type, investigate with traces if needed
