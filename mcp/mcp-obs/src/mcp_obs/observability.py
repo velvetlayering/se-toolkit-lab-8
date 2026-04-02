@@ -3,6 +3,7 @@ Observability tools for querying VictoriaLogs and VictoriaTraces APIs.
 """
 
 import asyncio
+import os
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 import httpx
@@ -14,11 +15,16 @@ class ObservabilityClient:
 
     def __init__(
         self,
-        logs_base_url: str = "http://localhost:42010",
-        traces_base_url: str = "http://localhost:42011",
+        logs_base_url: Optional[str] = None,
+        traces_base_url: Optional[str] = None,
     ):
-        self.logs_base_url = logs_base_url
-        self.traces_base_url = traces_base_url
+        # Read from environment variables if not provided
+        self.logs_base_url = logs_base_url or os.environ.get(
+            "NANOBOT_VICTORIALOGS_URL", "http://localhost:42010"
+        )
+        self.traces_base_url = traces_base_url or os.environ.get(
+            "NANOBOT_VICTORIATRACES_URL", "http://localhost:42011"
+        )
 
     async def search_logs(
         self, query: str, limit: int = 50, time_range: Optional[str] = None
