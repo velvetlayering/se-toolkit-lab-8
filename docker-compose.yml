@@ -95,7 +95,7 @@ services:
   # Task 2A — uncomment and adapt this service after you create repo-local nanobot/.
   nanobot:
     build:
-      context: ./bot/nanobot
+      context: ./nanobot
       additional_contexts:
         workspace: .
       args:
@@ -108,12 +108,17 @@ services:
       - lms-network
     volumes:
       # Mount only the parts nanobot needs to edit or read from the repo.
-      - ./bot/nanobot:/app/nanobot
+      - ./nanobot:/app/nanobot
       - ./mcp:/app/mcp
       - ./nanobot-websocket-channel:/app/nanobot-websocket-channel
       - ./wiki:/app/wiki:ro
       - ./lab:/app/lab:ro
       - ./contributing:/app/contributing:ro
+    tmpfs:
+      # Use tmpfs for cron and other writable directories to avoid permission issues
+      - /app/nanobot/workspace/cron:mode=1777
+      - /app/nanobot/workspace/memory:mode=1777
+      - /app/nanobot/workspace/sessions:mode=1777
     environment:
       # Task 1 used VM-shell URLs. In Docker, use service-to-service URLs instead.
       - LLM_API_KEY=${LLM_API_KEY:?'LLM_API_KEY is required'}

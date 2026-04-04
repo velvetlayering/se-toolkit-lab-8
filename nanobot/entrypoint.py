@@ -8,7 +8,6 @@ then launches nanobot gateway.
 
 import json
 import os
-import sys
 from pathlib import Path
 
 
@@ -117,9 +116,22 @@ def main():
             "env": {},
         }
 
+    # Ensure env section exists for obs MCP server
+    if "env" not in config["tools"]["mcpServers"]["obs"]:
+        config["tools"]["mcpServers"]["obs"]["env"] = {}
+
+    if "NANOBOT_VICTORIALOGS_URL" in os.environ:
+        config["tools"]["mcpServers"]["obs"]["env"]["NANOBOT_VICTORIALOGS_URL"] = (
+            os.environ["NANOBOT_VICTORIALOGS_URL"]
+        )
+    if "NANOBOT_VICTORIATRACES_URL" in os.environ:
+        config["tools"]["mcpServers"]["obs"]["env"]["NANOBOT_VICTORIATRACES_URL"] = (
+            os.environ["NANOBOT_VICTORIATRACES_URL"]
+        )
+
     # Write the resolved config
     with open(resolved_config_path, "w") as f:
-        json.dump(config, f, indent=2)
+        json.dump(config, f, indent=2, ensure_ascii=False)
 
     print(f"Using config: {resolved_config_path}")
 

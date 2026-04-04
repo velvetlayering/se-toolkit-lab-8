@@ -56,13 +56,13 @@ COPY --from=builder /app /app
 RUN chown -R nonroot:nonroot /app/nanobot/workspace
 
 # Place executables in the environment at the front of the path
-ENV PATH="/app/.venv/bin:$PATH"
+ENV PATH="/app/nanobot/.venv/bin:$PATH"
 
 # Use the non-root user to run our application
 USER nonroot
 
-# Use `/app` as the working directory
-WORKDIR /app
+# Use `/app/nanobot` as the working directory
+WORKDIR /app/nanobot
 
 # Run the nanobot entrypoint
 CMD ["python", "/app/nanobot/entrypoint.py"]
